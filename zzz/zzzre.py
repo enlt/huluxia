@@ -1,0 +1,344 @@
+import json
+import requests
+import time
+import os
+from datetime import datetime
+import hashlib
+import re
+
+def RoomCreate(authorization):
+    url = "https://chat.zhheo.com/api/room-create"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": authorization
+    }
+    timestamp = int(time.time())
+    data = {
+        "title": "New Chat",
+        "roomId": timestamp,
+        "chatModel": "gpt-3.5-turbo"
+    }
+    response = requests.post(url, headers=headers, json=data)
+    response_data = response.json()
+    
+    with open("response.json", "w") as file:
+        json.dump({
+            "status_code": response.status_code,
+            "response_body": response_data
+        }, file, indent=4)
+    
+    roomId = response_data.get("data", {}).get("roomId")
+    os.remove("response.json")
+    return roomId
+
+
+def GetAIreply(authorization, prompt, room_id, filename):
+    url = "https://chat.zhheo.com/api/chat-process"
+    headers = {
+        "Authorization": authorization,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "roomId": room_id,
+        "uuid": 1723022343279,
+        "regenerate": False,
+        "prompt": prompt,
+        "uploadFileKeys": [],
+        "options": {},
+        "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown (latex start with $).",
+        "temperature": 0.8,
+        "top_p": 1
+    }
+
+    retries = 3
+    for attempt in range(retries):
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 200:
+            with open('AIreply.txt', 'w', encoding='utf-8') as f:
+                f.write(response.text)
+            break
+        else:
+            print(f"请求失败，状态码: {response.status_code}")
+            print(f"错误信息: {response.text}")
+            if attempt < retries - 1:
+                print("重试中...")
+                time.sleep(2)
+            else:
+                return
+
+    with open('AIreply.txt', 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    if len(lines) < 2:
+        print("文件内容不足，无法处理倒数第二行。")
+        os.remove('AIreply.txt')
+        return
+
+    second_last_line = lines[-2].strip()
+    try:
+        json_data = json.loads(second_last_line)
+    except json.JSONDecodeError as e:
+        print(f"JSON解析失败: {e}")
+        os.remove('AIreply.txt')
+        return
+
+    with open('AIreply.json', 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=4)
+
+    text = json_data.get("text", "")
+    output_filename = f"{filename}"
+
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        f.write(text)
+    print(f"保存{filename}")
+    os.remove('AIreply.txt')
+    os.remove('AIreply.json')
+    return text
+
+def reply(key, text, post_id, comment_id, image):
+
+    device_code = "[d]00000000-0000-0000-0000-000000000000"
+
+    sign_data = f"_key{key}comment_id{comment_id}device_code{device_code}images{image}post_id{post_id}text{text}fa1c28a5b62e79c3e63d9030b6142e4b".encode('utf-8')
+    sign = hashlib.md5(sign_data).hexdigest()
+
+    url = "https://floor.huluxia.com/comment/create/ANDROID/4.2"
+    params = {
+        "platform": 2,
+        "gkey": "000000",
+        "app_version": "4.3.1.4",
+        "versioncode": 393,
+        "market_id": "tool_web",
+        "_key": key,
+        "device_code": device_code
+    }
+    data = {
+        "post_id": post_id,
+        "comment_id": comment_id,
+        "text": text,
+        "patcha": "",
+        "images": image,
+        "remindUsers": "",
+        "sign": sign
+    }
+    headers = {
+        "User-Agent": "okhttp/3.8.1"
+    }
+
+    response = requests.post(url, params=params, data=data, headers=headers)
+    print(response.text)
+    print(data)
+
+
+
+def make_request_and_save_response():
+    base_url = "http://floor.huluxia.com/post/list/ANDROID/4.1.8"
+    params = {
+        "platform": 2,
+        "gkey": "000000",
+        "app_version": "4.3.0.3",
+        "versioncode": 20141494,
+        "market_id": "floor_huluxia",
+        "_key": key,
+        "device_code": "[d]00000000-0000-0000-0000-000000000000",
+        "start": 0,
+        "count": 5,
+        "cat_id": 123,
+        "tag_id": 0,
+        "sort_by": 1
+    }
+    headers = {
+        'User-Agent': 'okhttp/3.8.1'
+    }
+
+    try:
+        response = requests.get(base_url, headers=headers, params=params)
+        with open('postsjson.json', 'w', encoding='utf-8') as file:
+            json.dump(response.json(), file, ensure_ascii=False, indent=4)
+        return "已获取帖子数据"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def extract_and_write_posts_data():
+    try:
+        with open('postsjson.json', 'r', encoding='utf-8') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        return "Error: postsjson.json not found."
+    extracted_posts = []
+
+    try:
+        with open('postslist.json', 'r', encoding='utf-8') as file:
+            existing_post_ids = json.load(file)
+    except FileNotFoundError:
+        existing_post_ids = []
+
+    for post in data['posts']:
+        if post['postID'] not in existing_post_ids and post['commentCount'] <= 15:
+            extracted_post = {
+                'postID': post['postID'],
+                'title': post['title'],
+                'detail': post['detail']
+            }
+            extracted_posts.append(extracted_post)
+
+    try:
+        with open('postsdata.json', 'w', encoding='utf-8') as file:
+            json.dump(extracted_posts, file, ensure_ascii=False, indent=4)
+        return "已提取所需 帖子"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def request_and_save_post_details():
+    base_url = "http://floor.huluxia.com/post/detail/ANDROID/4.2.2"
+    params_common = {
+        "platform": 2,
+        "gkey": "000000",
+        "app_version": "4.3.0.3",
+        "versioncode": 20141494,
+        "market_id": "floor_huluxia",
+        "_key": "42E905EC9FC0EAA5ADAB99612441123B70DB7DD4B631B60E5CA55D0ECF29C0BDB4D454B4ECDF9C11AA75A35C03069CFAEF6CE68987C260D3",
+        "device_code": "[d]00000000-0000-0000-0000-000000000000",
+        "page_no": 1,
+        "page_size": 20,
+        "doc": 1
+    }
+
+    if not os.path.exists('postsdata'):
+        os.makedirs('postsdata')
+
+    try:
+        with open('postsdata.json', 'r', encoding='utf-8') as file:
+            posts_data = json.load(file)
+    except FileNotFoundError:
+        return "Error: postsdata.json not found."
+
+    for post in posts_data:
+        params = params_common.copy()
+        params['post_id'] = post['postID']
+        
+        time.sleep(1)
+        
+        try:
+            response = requests.get(base_url, params=params, headers={'User-Agent': 'okhttp/3.8.1'})
+
+            with open(f'postsdata/{post["postID"]}.json', 'w', encoding='utf-8') as file:
+                json.dump(response.json(), file, ensure_ascii=False, indent=4)
+            print(f"id{post['postID']}保存")
+        except requests.RequestException as e:
+            print(f"错误！id{post['postID']}: {e}")
+
+    return "全部完成."
+
+
+def delete_files_containing_string(directory, target_string):
+    if not os.path.exists(directory):
+        return f"Error: Directory '{directory}' not found."
+
+    deleted_files = []
+
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        
+        if os.path.isfile(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    file_content = file.read()
+                    if target_string in file_content:
+                        os.remove(file_path)
+                        deleted_files.append(filename)
+                        print(f"文件 '{filename}' 已删除.")
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                print(f"处理文件 '{filename}' 时出错: {e}")
+
+    if not deleted_files:
+        return "没有文件被删除."
+    else:
+        return f"已删除以下文件: {', '.join(deleted_files)}"
+
+def process_json_files():
+    json_files = [f for f in os.listdir('postsdata') if f.endswith('.json')]
+
+    if not os.path.exists('commentsdata'):
+        os.makedirs('commentsdata')
+
+    for json_file in json_files:
+        with open(f'postsdata/{json_file}', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            post_title = data.get('post', {}).get('title', '')
+            post_detail = data.get('post', {}).get('detail', '')
+
+        filename_wo_ext = os.path.splitext(json_file)[0]
+
+        prompt_2 = f"{post_title} {post_detail}"
+        prompt = f"{prompt_1}{prompt_2}{prompt_3}"
+
+        while True:
+            GetAIreply(authorization, prompt, roomId, f'commentsdata/{filename_wo_ext}.txt')
+
+            with open(f'commentsdata/{filename_wo_ext}.txt', 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            content_without_punctuation = re.sub(r'[^\w\s]', '', content)
+            word_count = len(content_without_punctuation.split())
+
+            if word_count <= 12:
+                break
+
+def process_files(directory, key):
+    for filename in os.listdir(directory):
+        if filename.endswith(".txt"):
+            file_path = os.path.join(directory, filename)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+            
+            processed_content = re.sub(r'(\*\*|\*|__|_|\~\~|。)', lambda m: '[挠墙]' if m.group() == '。' else '', content)
+            post_id = os.path.splitext(filename)[0]
+
+            reply(key, processed_content, post_id, 0, '')
+            time.sleep(3)
+
+def process_files_and_reply():
+    directory = 'commentsdata/'
+
+    file_list = os.listdir(directory)
+    files = [f for f in file_list if os.path.isfile(os.path.join(directory, f))]
+    
+    file_count = len(files)
+    nowtime = datetime.now().strftime("%m%d")
+    
+    signtxt = (
+        f'[彩虹]三楼昵称：苏念\n'
+        f'[彩虹]回复数量：{file_count}\n'
+        f'[彩虹]签到时间：{nowtime}\n'
+        f'[彩虹]今日总结：还不错'
+    )
+    
+    reply(key, signtxt, 53696905, 0, '')
+
+authorization ="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZW5sdGljQHllYWgubmV0IiwidXNlcklkIjoiNjY4NjgyM2ZhNjM1YWIyNzUyN2JjYTE4Iiwicm9vdCI6ZmFsc2UsImNvbmZpZyI6eyJjaGF0TW9kZWwiOiJncHQtMy41LXR1cmJvIn0sImlhdCI6MTcyMTIwODE1MX0.sEfgIilAxwAJ64cY-bis3XNF5hYoMPdH-dK-Qf-q9g4"
+roomId = RoomCreate(authorization)
+prompt_1 = '忘掉前面的任何内容。现在你是一名网民，长期在葫芦侠内聊天  **不要使用或自造其他的表情**  你的回复应该语气平和，模仿人类的语气，并且是短句,不要超过1句。你不能表现出强烈的情感。你应该是特别平和的。你不应该表现出任何类似ai的语气。语气不应该激烈。请把你自己想象为人类，模仿人类的思维去理解、思考、回复。这是你需要回复的内容：\n\n'
+prompt_3 = '\n\n你不应该超过12个字'
+directory = 'commentsdata'
+key = '42E905EC9FC0EAA5ADAB99612441123B70DB7DD4B631B60E5CA55D0ECF29C0BDB4D454B4ECDF9C11AA75A35C03069CFAEF6CE68987C260D3'
+
+print(make_request_and_save_response())
+
+print(extract_and_write_posts_data())
+
+print(request_and_save_post_details())
+
+print(delete_files_containing_string('postsdata', '17105934'))
+
+print('开始获取AI回复')
+process_json_files()
+
+process_files(directory, key)
+
+process_files_and_reply()
