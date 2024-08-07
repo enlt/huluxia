@@ -143,7 +143,7 @@ def make_request_and_save_response():
         "_key": key,
         "device_code": "[d]00000000-0000-0000-0000-000000000000",
         "start": 0,
-        "count": 5,
+        "count": 100,
         "cat_id": 123,
         "tag_id": 0,
         "sort_by": 1
