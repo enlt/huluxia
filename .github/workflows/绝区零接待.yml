@@ -2,7 +2,7 @@ name: 绝区零接待回复
 
 on:
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "0 9 * * *"
   workflow_dispatch:
 
 jobs:
