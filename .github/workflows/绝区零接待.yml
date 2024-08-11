@@ -24,4 +24,6 @@ jobs:
         pip install -r requirements.txt
 
     - name: HLX-内向的猫&苏念-账号签到
-      run: python zzz/zzzre.py
+      run: python zzz/zzzre.py | tee output.log
+      env:
+        PYTHONUNBUFFERED: 1
