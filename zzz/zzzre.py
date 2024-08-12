@@ -2,9 +2,10 @@ import json
 import requests
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import re
+import random
 
 def RoomCreate(authorization):
     url = "https://chat.zhheo.com/api/room-create"
@@ -132,7 +133,7 @@ def reply(key, text, post_id, comment_id, image):
 
 
 
-def make_request_and_save_response():
+def GetPostsData():
     base_url = "http://floor.huluxia.com/post/list/ANDROID/4.1.8"
     params = {
         "platform": 2,
@@ -143,8 +144,8 @@ def make_request_and_save_response():
         "_key": key,
         "device_code": "[d]00000000-0000-0000-0000-000000000000",
         "start": 0,
-        "count": 100,
-        "cat_id": 123,
+        "count": 1,
+        "cat_id": 125,
         "tag_id": 0,
         "sort_by": 1
     }
@@ -161,7 +162,7 @@ def make_request_and_save_response():
         return f"Error: {e}"
 
 
-def extract_and_write_posts_data():
+def NeedPosts():
     try:
         with open('postsjson.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
@@ -192,7 +193,7 @@ def extract_and_write_posts_data():
         return f"Error: {e}"
 
 
-def request_and_save_post_details():
+def SavePostData():
     base_url = "http://floor.huluxia.com/post/detail/ANDROID/4.2.2"
     params_common = {
         "platform": 2,
@@ -234,7 +235,7 @@ def request_and_save_post_details():
     return "全部完成."
 
 
-def delete_files_containing_string(directory, target_string):
+def DeleteNOTPost(directory, target_string):
     if not os.path.exists(directory):
         return f"Error: Directory '{directory}' not found."
 
@@ -261,7 +262,7 @@ def delete_files_containing_string(directory, target_string):
     else:
         return f"已删除以下文件: {', '.join(deleted_files)}"
 
-def process_json_files():
+def SaveAIReply():
     json_files = [f for f in os.listdir('postsdata') if f.endswith('.json')]
 
     if not os.path.exists('commentsdata'):
@@ -290,31 +291,60 @@ def process_json_files():
             if word_count <= 12:
                 break
 
-def process_files(directory, key):
+def ReplyPosts(directory, key):
+    emoji_list = ["[OK]", "[滑稽]", "[玫瑰]", "[挠墙]", "[花心]", "[太开心]", "[冷]", "[笑眼]", "[勉强]", "[呼~]", "[飘过]", "[大拇指]", "[蜷]"]
     for filename in os.listdir(directory):
         if filename.endswith(".txt"):
             file_path = os.path.join(directory, filename)
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
             
-            processed_content = re.sub(r'(\*\*|\*|__|_|\~\~|。)', lambda m: '[挠墙]' if m.group() == '。' else '', content)
+            processed_content = re.sub(r'(\*\*|\*|__|_|\~\~|。)', lambda m: random.choice(emoji_list) if m.group() == '。' else '', content)
             post_id = os.path.splitext(filename)[0]
 
             reply(key, processed_content, post_id, 0, '')
             time.sleep(3)
 
-def process_files_and_reply():
-    directory = 'commentsdata/'
-
-    file_list = os.listdir(directory)
-    files = [f for f in file_list if os.path.isfile(os.path.join(directory, f))]
+def GetTodayComments():
+    url = f"https://floor.huluxia.com/comment/create/list/ANDROID/4.1.8?user_id=17105934&start=0&count=200&platform=2&gkey=000000&app_version=4.3.1.4&versioncode=393&market_id=tool_web&_key={key}&device_code=%5Bd%5D493fbe20-78a1-4d47-9210-e66205b8a2f0"
     
-    file_count = len(files)
+    headers = {
+        "User-Agent": "okhttp/3.8.1"
+    }
+    
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        data = response.json()
+        
+        comments = data.get('comments', [])
+        filtered_comments = []
+        current_time = datetime.utcnow() + timedelta(hours=8)
+        
+        for comment in comments:
+            create_time = comment.get('createTime')
+            category_id = comment.get('category', {}).get('categoryID')
+            comment_time = datetime.utcfromtimestamp(create_time / 1000) + timedelta(hours=8)
+            comment['createTime'] = comment_time.strftime('%Y-%m-%d %H:%M:%S')
+            if comment_time.date() == current_time.date() and category_id == 125:
+                filtered_comments.append({
+                    "commentID": comment.get('commentID'),
+                    "createTime": comment['createTime'],
+                    "categoryID": category_id
+                })
+        with open("todaycomments.json", "w", encoding='utf-8') as f:
+            json.dump(filtered_comments, f, ensure_ascii=False, indent=4)
+        return len(filtered_comments)
+    else:
+        print(f"请求失败，状态码：{response.status_code}")
+        return 0
+
+def SignWithPost(count):
     nowtime = datetime.now().strftime("%m%d")
     
     signtxt = (
         f'[彩虹]三楼昵称：苏念\n'
-        f'[彩虹]回复数量：{file_count}\n'
+        f'[彩虹]回复数量：{count}\n'
         f'[彩虹]签到时间：{nowtime}\n'
         f'[彩虹]今日总结：还不错'
     )
@@ -328,17 +358,19 @@ prompt_3 = '\n\n你不应该超过12个字'
 directory = 'commentsdata'
 key = '42E905EC9FC0EAA5ADAB99612441123B70DB7DD4B631B60E5CA55D0ECF29C0BDB4D454B4ECDF9C11AA75A35C03069CFAEF6CE68987C260D3'
 
-print(make_request_and_save_response())
+print(GetPostsData())
 
-print(extract_and_write_posts_data())
+print(NeedPosts())
 
-print(request_and_save_post_details())
+print(SavePostData())
 
-print(delete_files_containing_string('postsdata', '17105934'))
+print(DeleteNOTPost('postsdata', '17105934'))
 
 print('开始获取AI回复')
-process_json_files()
+SaveAIReply()
 
-process_files(directory, key)
+ReplyPosts(directory, key)
 
-process_files_and_reply()
+commentscount = GetTodayComments()
+
+SignWithPost(commentscount)
