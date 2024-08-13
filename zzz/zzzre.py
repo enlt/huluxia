@@ -144,8 +144,8 @@ def GetPostsData():
         "_key": key,
         "device_code": "[d]00000000-0000-0000-0000-000000000000",
         "start": 0,
-        "count": 1,
-        "cat_id": 125,
+        "count": 100,
+        "cat_id": 123,
         "tag_id": 0,
         "sort_by": 1
     }
@@ -326,7 +326,7 @@ def GetTodayComments():
             category_id = comment.get('category', {}).get('categoryID')
             comment_time = datetime.utcfromtimestamp(create_time / 1000) + timedelta(hours=8)
             comment['createTime'] = comment_time.strftime('%Y-%m-%d %H:%M:%S')
-            if comment_time.date() == current_time.date() and category_id == 125:
+            if comment_time.date() == current_time.date() and category_id == 123:
                 filtered_comments.append({
                     "commentID": comment.get('commentID'),
                     "createTime": comment['createTime'],
