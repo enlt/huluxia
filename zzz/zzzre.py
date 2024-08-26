@@ -210,7 +210,7 @@ def GetPostsData():
         "_key": key,
         "device_code": "[d]00000000-0000-0000-0000-000000000000",
         "start": 0,
-        "count": 150,
+        "count": 80,
         "cat_id": 123,
         "tag_id": 0,
         "sort_by": 1
