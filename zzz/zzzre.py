@@ -7,6 +7,8 @@ import hashlib
 import re
 import random
 
+# test
+
 def is_english(text):# 判断是否纯英文
     if text is None:
         return True
