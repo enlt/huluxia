@@ -415,7 +415,7 @@ def SignWithPost(count):
         f'[彩虹]今日总结：还不错'
     )
 
-    reply(key, signtxt, 53696905, 0, '')
+    reply(key, signtxt, 53762873, 0, '')
 
 #authorization ="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZW5sdGljQHllYWgubmV0IiwidXNlcklkIjoiNjY4NjgyM2ZhNjM1YWIyNzUyN2JjYTE4Iiwicm9vdCI6ZmFsc2UsImNvbmZpZyI6eyJjaGF0TW9kZWwiOiJncHQtMy41LXR1cmJvIn0sImlhdCI6MTcyMTIwODE1MX0.sEfgIilAxwAJ64cY-bis3XNF5hYoMPdH-dK-Qf-q9g4"
 #roomId = RoomCreate(authorization)
