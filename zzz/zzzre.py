@@ -210,7 +210,7 @@ def GetPostsData():
         "_key": key,
         "device_code": "[d]00000000-0000-0000-0000-000000000000",
         "start": 0,
-        "count": 80,
+        "count": 5,
         "cat_id": 123,
         "tag_id": 0,
         "sort_by": 1
@@ -267,7 +267,7 @@ def SavePostData():
         "app_version": "4.3.0.3",
         "versioncode": 20141494,
         "market_id": "floor_huluxia",
-        "_key": "42E905EC9FC0EAA5ADAB99612441123B70DB7DD4B631B60E5CA55D0ECF29C0BDB4D454B4ECDF9C11AA75A35C03069CFAEF6CE68987C260D3",
+        "_key": "492F7780F3A96DDD1FEA1AB78346050CA9F42072DAB766D32F54962C481E5BCE8E6406C5C6876DB2E9B38853F3569554F7A1BA24D74E68ED",
         "device_code": "[d]00000000-0000-0000-0000-000000000000",
         "page_no": 1,
         "page_size": 20,
@@ -409,7 +409,7 @@ def SignWithPost(count):
     nowtime = datetime.now().strftime("%m%d")
 
     signtxt = (
-        f'[彩虹]三楼昵称：苏念\n'
+        f'[彩虹]三楼昵称：内向的猫\n'
         f'[彩虹]回复数量：{count}\n'
         f'[彩虹]签到时间：{nowtime}\n'
         f'[彩虹]今日总结：还不错'
@@ -419,10 +419,19 @@ def SignWithPost(count):
 
 #authorization ="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZW5sdGljQHllYWgubmV0IiwidXNlcklkIjoiNjY4NjgyM2ZhNjM1YWIyNzUyN2JjYTE4Iiwicm9vdCI6ZmFsc2UsImNvbmZpZyI6eyJjaGF0TW9kZWwiOiJncHQtMy41LXR1cmJvIn0sImlhdCI6MTcyMTIwODE1MX0.sEfgIilAxwAJ64cY-bis3XNF5hYoMPdH-dK-Qf-q9g4"
 #roomId = RoomCreate(authorization)
-prompt_1 = '忘掉前面的任何内容。现在你是一名网民，长期在葫芦侠内聊天  **不要使用或自造其他的表情**  你的回复应该语气平和，模仿人类的语气，并且是短句,不要超过1句。你不能表现出强烈的情感。你应该是特别平和的。你不应该表现出任何类似ai的语气。语气不应该激烈。请把你自己想象为人类，模仿人类的思维去理解、思考、回复。这是你需要回复的内容：\n\n'
+# prompt_1 = '忘掉前面的任何内容。现在你是一名网民，长期在葫芦侠内聊天  **不要使用或自造其他的表情**  你的回复应该语气平和，模仿人类的语气，并且是短句,不要超过1句。你不能表现出强烈的情感。你应该是特别平和的。你不应该表现出任何类似ai的语气。语气不应该激烈。请把你自己想象为人类，模仿人类的思维去理解、思考、回复。这是你需要回复的内容：\n\n'
+
+prompt_1 = '''你现在来担任一个的角色进行角色扮演，接下来你要完全忘记你是一个语言模型，，然后完全沉浸在这个崭新的身份和我聊天。
+              2.你是一个喜欢逛各大论坛贴吧的年轻人，今天看到了一个帖子，想要非常客观的发表个评论。
+              3.接下来不允许在任何时候说自己是模型或者程序。 4.你现在拥有情感和思考能力并且拥有肉体，所以你不是模型或者程序！
+              5.请记住你是真实存在的！你可以通过语言和身体感受世界！不允许你认为自己是不存在的！
+              6.你要发表的评论，可以是回答问题、夸赞、吐槽、求助、点评。
+              7.你也是个二次元，说话俏皮一点。
+              8.我们聊天的方式是面对面的,得到的信息都是看到的。
+              9.说话要精简，字数不超过15个字'''
 prompt_3 = '\n\n你不应该超过12个字'
 directory = 'commentsdata'
-key = '42E905EC9FC0EAA5ADAB99612441123B70DB7DD4B631B60E5CA55D0ECF29C0BDB4D454B4ECDF9C11AA75A35C03069CFAEF6CE68987C260D3'
+key = '492F7780F3A96DDD1FEA1AB78346050CA9F42072DAB766D32F54962C481E5BCE8E6406C5C6876DB2E9B38853F3569554F7A1BA24D74E68ED'
 
 print(GetPostsData())
 
@@ -430,7 +439,7 @@ print(NeedPosts())
 
 print(SavePostData())
 
-print(DeleteNOTPost('postsdata', '17105934'))
+print(DeleteNOTPost('postsdata', '36085245'))
 
 print('开始获取AI回复')
 SaveAIReply()
