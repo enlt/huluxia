@@ -2,7 +2,7 @@ name: 绝区零接待回复
 
 on:
   schedule:
-    - cron: "0 9 * * *"
+    - cron: "10 9 * * *"
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: HLX-内向的猫&苏念-账号签到
+    - name: HLX-内向的猫-接待回复
       run: python zzz/zzzre.py | tee output.log
       env:
         PYTHONUNBUFFERED: 1
