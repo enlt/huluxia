@@ -720,6 +720,6 @@ CountPost = 60
 # print(f"板块{CategoryID} 共{CommentsNumber}个")
 # print(f"共{CommentsNumber}个")
 # DeleteComment(key, JsonFile)
-GetPost(key, "PostsData", 5, CatID, UserID)
+GetPost(key, "PostsData", 100, CatID, UserID)
 ReplyPost(key, "PostsData", 'comments.txt', CountPost)
 # SignWithPost("60")
