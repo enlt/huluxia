@@ -721,5 +721,5 @@ CountPost = 5
 # print(f"共{CommentsNumber}个")
 # DeleteComment(key, JsonFile)
 GetPost(key, "PostsData", 5, CatID, UserID)
-ReplyPost(key, "PostsData", 'comments.txt')
+ReplyPost(key, "PostsData", 'comments.txt', CountPost)
 # SignWithPost("60")
