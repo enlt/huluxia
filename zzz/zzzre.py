@@ -714,7 +714,7 @@ key = "492F7780F3A96DDD1FEA1AB78346050CA9F42072DAB766D32F54962C481E5BCE8E6406C5C
 # CategoryID = "ALL"
 CatID = 123
 UserID = "36085245"
-CountPost = 5
+CountPost = 60
 
 # CommentsNumber = GetTodayComments(key, UserID, CategoryID)
 # print(f"板块{CategoryID} 共{CommentsNumber}个")
