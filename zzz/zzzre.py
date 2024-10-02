@@ -651,10 +651,24 @@ def GetPost(key, directory, count, cat_id, UserID):
 def ReplyPost(key, directory, CommentsFile, CountPost):
     json_files = [file for file in os.listdir(directory) if file.endswith('.json')]
     
-    # 确保 CountPost 不大于 json_files 的长度
-    CountPost = min(CountPost, len(json_files))
+    # 打印调试信息
+    print(f"总的 JSON 文件数量: {len(json_files)}")
+    print(f"请求的 CountPost: {CountPost}")
     
-    selected_json_files = random.sample(json_files, CountPost)
+    # 确保 CountPost 不大于 json_files 的长度
+    if CountPost > len(json_files):
+        print(f"将 CountPost 从 {CountPost} 调整为 {len(json_files)}")
+        CountPost = len(json_files)
+    elif CountPost < 0:
+        print("CountPost 是负数，设置为 0。")
+        CountPost = 0
+    
+    if CountPost > 0:
+        selected_json_files = random.sample(json_files, CountPost)
+    else:
+        print("没有选择 JSON 文件，退出。")
+        return
+    
     post_ids = []
     for json_file in selected_json_files:
         with open(os.path.join(directory, json_file), 'r', encoding='utf-8') as f:
