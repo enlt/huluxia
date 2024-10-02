@@ -650,15 +650,23 @@ def GetPost(key, directory, count, cat_id, UserID):
 
 def ReplyPost(key, directory, CommentsFile, CountPost):
     json_files = [file for file in os.listdir(directory) if file.endswith('.json')]
+    
+    # 确保 CountPost 不大于 json_files 的长度
+    CountPost = min(CountPost, len(json_files))
+    
     selected_json_files = random.sample(json_files, CountPost)
     post_ids = []
     for json_file in selected_json_files:
         with open(os.path.join(directory, json_file), 'r', encoding='utf-8') as f:
             data = json.load(f)
             post_ids.append(data.get('post', {}).get('postID'))
+    
     with open(CommentsFile, 'r', encoding='utf-8') as f:
         comments = f.readlines()
-    selected_comments = random.sample(comments, CountPost)
+    
+    # 确保 selected_comments 不会超出 comments 的长度
+    selected_comments = random.sample(comments, min(CountPost, len(comments)))
+    
     for index, (post_id, comment) in enumerate(zip(post_ids, selected_comments)):
         reply(key, comment.strip(), post_id, 0, '')
         time.sleep(3)
