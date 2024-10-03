@@ -85,7 +85,7 @@ def SignWithPost(count):
         f'[彩虹]今日总结：还不错'
     )
 
-    reply(key, signtxt, 53762873, 0, '')
+    reply(key, signtxt, 53841849, 0, '')
 
 key = '8730472954AD29E4BFF3D283AD7B117C7B685B9DBCDC948E6A5ECE27126D028FC416D5E1D4A0C87D23BF7E4D1A985F1AF12550A5C55BCEF3'
 
